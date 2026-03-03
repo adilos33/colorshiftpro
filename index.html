@@ -247,6 +247,47 @@ canvas{display:none;}
 @keyframes ssFade{from{opacity:0}to{opacity:1}}
 @keyframes ssRotate{from{transform:scale(1) rotate(0deg)}to{transform:scale(1.08) rotate(1.5deg)}}
 
+/* ===== FACE ANIMATE PANEL ===== */
+.face-panel{background:var(--sur);border-radius:20px;border:1px solid var(--brd);padding:22px;display:none;margin-top:20px;}
+.face-panel.show{display:block;}
+.face-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.face-panel-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;
+  background:linear-gradient(90deg,#ff6eb4,#ffd166);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;}
+.face-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.face-card{background:var(--sur2);border-radius:14px;border:1px solid var(--brd);overflow:hidden;position:relative;}
+.face-canvas-wrap{position:relative;background:#000;}
+.face-canvas-wrap canvas{display:block;width:100%;height:auto;}
+.face-card-bar{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;background:var(--sur3);}
+.face-card-lbl{font-size:11px;color:var(--mut);}
+.face-card-btns{display:flex;gap:5px;}
+.face-card-btn{background:var(--sur2);border:1px solid var(--brd);border-radius:6px;
+  padding:4px 9px;font-size:10px;font-family:'Syne',sans-serif;font-weight:700;
+  cursor:pointer;color:var(--text);transition:all .15s;}
+.face-card-btn:hover{border-color:#ff6eb4;color:#ff6eb4;}
+.face-live-badge{position:absolute;top:7px;right:7px;background:rgba(0,0,0,0.7);
+  border-radius:100px;padding:3px 9px;font-size:10px;color:#ff6eb4;
+  font-family:'Syne',sans-serif;font-weight:700;display:none;}
+.face-live-badge.show{display:block;animation:fadePulse 1.5s ease infinite;}
+.face-controls-bar{background:var(--sur2);border-radius:14px;padding:16px;border:1px solid var(--brd);margin-bottom:18px;}
+.face-ctrls-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.face-tog-btn{background:var(--sur3);border:1.5px solid var(--brd);border-radius:9px;
+  padding:8px 6px;text-align:center;cursor:pointer;transition:all .15s;font-family:'Tajawal',sans-serif;}
+.face-tog-btn .ftb-icon{font-size:18px;display:block;margin-bottom:3px;}
+.face-tog-btn .ftb-lbl{font-size:10px;color:var(--mut);font-weight:700;}
+.face-tog-btn.fon{border-color:#ff6eb4;background:rgba(255,110,180,0.1);}
+.face-tog-btn.fon .ftb-lbl{color:#ff6eb4;}
+.face-preset-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.face-pre{background:var(--sur3);border:1.5px solid var(--brd);border-radius:8px;
+  padding:6px 12px;font-size:11px;font-family:'Tajawal',sans-serif;font-weight:700;
+  cursor:pointer;transition:all .15s;color:var(--text);}
+.face-pre:hover{border-color:#ff6eb4;color:#ff6eb4;}
+.face-sl-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.face-sl{display:flex;flex-direction:column;gap:4px;}
+.face-sl span{font-size:11px;color:var(--mut);}
+.face-sl b{font-size:11px;color:var(--text);}
+@keyframes fadePulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
 /* ===== WIND PANEL ===== */
 .wind-panel{background:var(--sur);border-radius:20px;border:1px solid var(--brd);padding:22px;display:none;margin-top:20px;}
 .wind-panel.show{display:block;}
@@ -336,6 +377,10 @@ canvas{display:none;}
           <div class="step-num">5</div>
           <div class="step-txt">🌬️ تأثير الريح</div>
         </div>
+        <div class="step-item" id="st6">
+          <div class="step-num">6</div>
+          <div class="step-txt">🎭 تحريك الوجه</div>
+        </div>
       </div>
     </div>
 
@@ -366,6 +411,9 @@ canvas{display:none;}
     </button>
     <button class="btn" id="windBtn" onclick="openWindPanel()" style="display:none;background:linear-gradient(135deg,#00d4ff,#7c3aed);color:#fff;box-shadow:0 5px 20px rgba(0,212,255,0.3)">
       🌬️ تأثير الريح على الصور
+    </button>
+    <button class="btn" id="faceBtn" onclick="openFacePanel()" style="display:none;background:linear-gradient(135deg,#ff6eb4,#ffd166);color:#000;box-shadow:0 5px 20px rgba(255,110,180,0.3)">
+      🎭 تحريك الوجه
     </button>
     <button class="btn btn-ghost" id="resetBtn" onclick="resetAll()" style="display:none">
       🔄 فيديو جديد
@@ -481,6 +529,44 @@ canvas{display:none;}
       </div>
       <video id="outputVideo" controls style="width:100%;border-radius:14px;background:#000;display:none"></video>
     </div>
+    </div>
+
+
+    <!-- Face Animate Panel -->
+    <div class="face-panel anim" id="facePanel">
+      <div class="face-panel-hdr">
+        <div class="face-panel-title">🎭 تحريك الوجه في الصور</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="res-btn" style="background:linear-gradient(135deg,#ff6eb4,#ffd166);color:#000" onclick="facePlayAll()">▶️ تشغيل الكل</button>
+          <button class="res-btn res-btn-ghost" onclick="faceStopAll()">⏹ إيقاف الكل</button>
+          <button class="res-btn res-btn-ghost" onclick="document.getElementById('facePanel').classList.remove('show')">✕ إغلاق</button>
+        </div>
+      </div>
+      <!-- Controls -->
+      <div class="face-controls-bar">
+        <div class="face-ctrls-grid">
+          <div class="face-tog-btn fon" id="ftog0" onclick="fToggle(0)"><span class="ftb-icon">😐</span><span class="ftb-lbl">رأس</span></div>
+          <div class="face-tog-btn fon" id="ftog1" onclick="fToggle(1)"><span class="ftb-icon">👁️</span><span class="ftb-lbl">طرف</span></div>
+          <div class="face-tog-btn fon" id="ftog2" onclick="fToggle(2)"><span class="ftb-icon">😊</span><span class="ftb-lbl">فم</span></div>
+          <div class="face-tog-btn" id="ftog3" onclick="fToggle(3)"><span class="ftb-icon">👀</span><span class="ftb-lbl">عيون</span></div>
+          <div class="face-tog-btn" id="ftog4" onclick="fToggle(4)"><span class="ftb-icon">🌊</span><span class="ftb-lbl">تموج</span></div>
+          <div class="face-tog-btn" id="ftog5" onclick="fToggle(5)"><span class="ftb-icon">✨</span><span class="ftb-lbl">كل شيء</span></div>
+        </div>
+        <div class="face-preset-row">
+          <div class="face-pre" onclick="fPreset('happy')">😄 سعيد</div>
+          <div class="face-pre" onclick="fPreset('sleepy')">😴 نعسان</div>
+          <div class="face-pre" onclick="fPreset('talking')">🗣️ يتحدث</div>
+          <div class="face-pre" onclick="fPreset('nod')">🤔 يومئ</div>
+          <div class="face-pre" onclick="fPreset('alive')">✨ حي كامل</div>
+        </div>
+        <div class="face-sl-row">
+          <div class="face-sl"><span>سرعة</span><b id="fSpeedLbl">5</b><input type="range" id="fSpeed" min="1" max="10" value="5" style="accent-color:#ff6eb4" oninput="document.getElementById('fSpeedLbl').textContent=this.value"></div>
+          <div class="face-sl"><span>قوة</span><b id="fAmpLbl">5</b><input type="range" id="fAmp" min="1" max="10" value="5" style="accent-color:#ff6eb4" oninput="document.getElementById('fAmpLbl').textContent=this.value"></div>
+          <div class="face-sl"><span>طرف</span><b id="fBlinkLbl">4</b><input type="range" id="fBlink" min="1" max="10" value="4" style="accent-color:#ff6eb4" oninput="document.getElementById('fBlinkLbl').textContent=this.value"></div>
+        </div>
+      </div>
+      <!-- Cards Grid -->
+      <div class="face-grid" id="faceGrid"></div>
     </div>
 
     <!-- Wind Panel -->
@@ -651,7 +737,7 @@ function showRandPalette() {
 }
 
 function setStep(n) {
-  for (var i = 1; i <= 5; i++) {
+  for (var i = 1; i <= 6; i++) {
     var el = document.getElementById('st' + i);
     if (!el) continue;
     el.className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
@@ -733,7 +819,7 @@ async function startProcess() {
   document.getElementById('startBtn2').disabled = false;
   document.getElementById('downloadBtn').style.display = 'flex';
   document.getElementById('windBtn').style.display = 'flex';
-  document.getElementById('windBtn').style.display = 'flex';
+  document.getElementById('faceBtn').style.display = 'flex';
   document.getElementById('resCount').textContent = frames.length;
   document.getElementById('resultsPanel').classList.add('show');
   document.getElementById('resultsPanel').scrollIntoView({behavior:'smooth'});
@@ -1190,6 +1276,255 @@ function wSaveOne(i){
   var a=document.createElement('a');
   a.href=item.canvas.toDataURL('image/jpeg',0.92);
   a.download='wind_frame_'+(i+1)+'.jpg'; a.click();
+}
+
+// ========= FACE ANIMATE =========
+var fCtrls = [true, true, true, false, false]; // head, blink, mouth, eyes, ripple
+var faceItems = []; // {canvas, ctx, origImg, rafId, running, frame}
+
+function fToggle(i) {
+  if (i === 5) { // all on
+    fCtrls = [true,true,true,true,true];
+    for(var k=0;k<5;k++) { var el=document.getElementById('ftog'+k); if(el) el.classList.add('fon'); }
+    document.getElementById('ftog5').classList.add('fon');
+    return;
+  }
+  fCtrls[i] = !fCtrls[i];
+  var el = document.getElementById('ftog'+i);
+  if(el) el.classList.toggle('fon', fCtrls[i]);
+}
+
+function fPreset(p) {
+  var pr = {
+    happy:   [true,true,true,false,false,  7,4,3],
+    sleepy:  [true,true,false,false,false, 3,2,9],
+    talking: [false,true,true,false,false, 4,6,3],
+    nod:     [true,true,false,false,false, 8,3,4],
+    alive:   [true,true,true,true,true,    6,5,4]
+  };
+  var v = pr[p]; if(!v) return;
+  fCtrls = [v[0],v[1],v[2],v[3],v[4]];
+  for(var k=0;k<5;k++) { var el=document.getElementById('ftog'+k); if(el) el.classList.toggle('fon', fCtrls[k]); }
+  document.getElementById('fAmp').value=v[5]; document.getElementById('fAmpLbl').textContent=v[5];
+  document.getElementById('fSpeed').value=v[6]; document.getElementById('fSpeedLbl').textContent=v[6];
+  document.getElementById('fBlink').value=v[7]; document.getElementById('fBlinkLbl').textContent=v[7];
+}
+
+function openFacePanel() {
+  if (!frames.length) return;
+  var panel = document.getElementById('facePanel');
+  var grid = document.getElementById('faceGrid');
+  grid.innerHTML = '';
+  faceItems = [];
+
+  frames.forEach(function(f, i) {
+    var card = document.createElement('div');
+    card.className = 'face-card';
+
+    var cwrap = document.createElement('div');
+    cwrap.className = 'face-canvas-wrap';
+
+    var cvs = document.createElement('canvas');
+    var cctx = cvs.getContext('2d');
+
+    var badge = document.createElement('div');
+    badge.className = 'face-live-badge';
+    badge.id = 'flive'+i;
+    badge.textContent = '🔴 LIVE';
+
+    var img = new Image();
+    img.onload = function() {
+      var maxW = Math.min(img.width, 400);
+      var sc = maxW / img.width;
+      cvs.width  = Math.round(img.width  * sc);
+      cvs.height = Math.round(img.height * sc);
+      cctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+    };
+    img.src = f.dataURL;
+
+    cwrap.appendChild(cvs);
+    cwrap.appendChild(badge);
+
+    var bar = document.createElement('div');
+    bar.className = 'face-card-bar';
+    bar.innerHTML = '<span class="face-card-lbl">صورة #'+(i+1)+'</span>'
+      +'<div class="face-card-btns">'
+      +'<button class="face-card-btn" id="fbtn'+i+'" onclick="fToggleItem('+i+')">▶️</button>'
+      +'<button class="face-card-btn" onclick="fSave('+i+')">💾</button>'
+      +'</div>';
+
+    card.appendChild(cwrap);
+    card.appendChild(bar);
+    grid.appendChild(card);
+
+    faceItems.push({
+      canvas: cvs, ctx: cctx,
+      origImg: img,
+      badge: badge,
+      rafId: null, running: false, frame: 0
+    });
+  });
+
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior:'smooth'});
+  setStep(6);
+}
+
+function fToggleItem(i) {
+  var item = faceItems[i]; if(!item) return;
+  if(item.running) fStopItem(i); else fPlayItem(i);
+}
+
+function fPlayItem(i) {
+  var item = faceItems[i]; if(!item || item.running) return;
+  item.running = true; item.frame = 0;
+  item.badge.classList.add('show');
+  var btn = document.getElementById('fbtn'+i); if(btn) btn.textContent='⏹';
+  fLoop(i);
+}
+
+function fStopItem(i) {
+  var item = faceItems[i]; if(!item) return;
+  item.running = false;
+  if(item.rafId) cancelAnimationFrame(item.rafId);
+  item.badge.classList.remove('show');
+  var btn = document.getElementById('fbtn'+i); if(btn) btn.textContent='▶️';
+  if(item.origImg.complete && item.canvas.width)
+    item.ctx.drawImage(item.origImg, 0, 0, item.canvas.width, item.canvas.height);
+}
+
+function fLoop(i) {
+  var item = faceItems[i]; if(!item || !item.running) return;
+  fRender(item);
+  item.frame++;
+  item.rafId = requestAnimationFrame(function(){ fLoop(i); });
+}
+
+function fRender(item) {
+  if(!item.origImg.complete || !item.origImg.width) return;
+  var W = item.canvas.width, H = item.canvas.height;
+  if(!W || !H) return;
+  var spd = parseFloat(document.getElementById('fSpeed').value) * 0.018;
+  var amp = parseFloat(document.getElementById('fAmp').value);
+  var blinkRate = parseFloat(document.getElementById('fBlink').value);
+  var t = item.frame * spd;
+
+  // Draw base
+  if(fCtrls[4]) { // ripple
+    var tmp = document.createElement('canvas'); tmp.width=W; tmp.height=H;
+    var tctx = tmp.getContext('2d'); tctx.drawImage(item.origImg,0,0,W,H);
+    var od = tctx.getImageData(0,0,W,H).data;
+    var out = item.ctx.createImageData(W,H); var nd=out.data;
+    var ra = amp*1.2;
+    for(var y=0;y<H;y++) for(var x=0;x<W;x++) {
+      var nx=Math.min(W-1,Math.max(0,Math.round(x+Math.sin(y*0.03+t*2)*ra*0.35)));
+      var ny=Math.min(H-1,Math.max(0,Math.round(y+Math.sin(x*0.03+t*1.7)*ra*0.2)));
+      var si=(ny*W+nx)*4,di=(y*W+x)*4;
+      nd[di]=od[si];nd[di+1]=od[si+1];nd[di+2]=od[si+2];nd[di+3]=255;
+    }
+    item.ctx.putImageData(out,0,0);
+  } else {
+    item.ctx.drawImage(item.origImg,0,0,W,H);
+  }
+
+  // Face region (normalized, portrait-assumed)
+  var fcx=W*0.5, fcy=H*0.32, fR=Math.min(W,H)*0.3;
+  var eyeLX=W*0.38, eyeRX=W*0.62, eyeY=H*0.28;
+  var eW=W*0.07, eH=H*0.033;
+  var mX=W*0.5, mY=H*0.47, mW=W*0.14;
+
+  // HEAD tilt + bob
+  if(fCtrls[0]) {
+    var tilt = Math.sin(t*0.9)*(amp*0.006);
+    var bY   = Math.sin(t*1.1)*(amp*0.7);
+    var bX   = Math.sin(t*0.7)*(amp*0.45);
+    var orig2 = document.createElement('canvas'); orig2.width=W; orig2.height=H;
+    orig2.getContext('2d').drawImage(item.origImg,0,0,W,H);
+    var od2 = orig2.getContext('2d').getImageData(0,0,W,H).data;
+    var outD = item.ctx.getImageData(0,0,W,H);
+    var od3 = outD.data;
+    for(var y2=0;y2<H;y2++) for(var x2=0;x2<W;x2++) {
+      var dx=x2-fcx, dy2=y2-fcy, dist=Math.sqrt(dx*dx+dy2*dy2);
+      if(dist<fR) {
+        var wt=Math.pow(1-dist/fR,1.5);
+        var cos=Math.cos(-tilt*wt),sin2=Math.sin(-tilt*wt);
+        var sx2=Math.min(W-1,Math.max(0,Math.round(fcx+cos*dx-sin2*dy2-bX*wt)));
+        var sy2=Math.min(H-1,Math.max(0,Math.round(fcy+sin2*dx+cos*dy2-bY*wt)));
+        var si2=(sy2*W+sx2)*4, di2=(y2*W+x2)*4;
+        od3[di2]=od2[si2];od3[di2+1]=od2[si2+1];od3[di2+2]=od2[si2+2];od3[di2+3]=255;
+      }
+    }
+    item.ctx.putImageData(outD,0,0);
+  }
+
+  // BLINK
+  if(fCtrls[1]) {
+    var bc = (t*blinkRate)%(Math.PI*2);
+    var bv = bc>5.5 ? Math.pow(Math.sin((bc-5.5)*3.14),2) : 0;
+    if(bv>0.05) {
+      var tmp2 = document.createElement('canvas'); tmp2.width=W; tmp2.height=H;
+      tmp2.getContext('2d').drawImage(item.origImg,0,0,W,H);
+      [eyeLX, eyeRX].forEach(function(ex) {
+        var lid = tmp2.getContext('2d').getImageData(Math.round(ex-eW*1.2),Math.round(eyeY-eH*2),Math.round(eW*2.4),Math.round(eH*1.5));
+        var sR=0,sG=0,sB=0,sc2=0;
+        for(var ii=0;ii<lid.data.length;ii+=4){sR+=lid.data[ii];sG+=lid.data[ii+1];sB+=lid.data[ii+2];sc2++;}
+        if(sc2){sR=sR/sc2;sG=sG/sc2;sB=sB/sc2;}
+        item.ctx.fillStyle='rgba('+Math.round(sR)+','+Math.round(sG)+','+Math.round(sB)+','+bv+')';
+        item.ctx.beginPath();
+        item.ctx.ellipse(ex,eyeY,eW*1.1,eH*(bv+0.1),0,0,Math.PI*2);
+        item.ctx.fill();
+      });
+    }
+  }
+
+  // MOUTH
+  if(fCtrls[2]) {
+    var smile = (Math.sin(t*0.7)*0.5+0.5)*amp*1.2;
+    var openV = Math.max(0,Math.sin(t*2.1))*amp*0.5;
+    var lipData = item.ctx.getImageData(Math.round(mX-mW/2),Math.round(mY-3),Math.round(mW),5);
+    var lR=170,lG=80,lB=80,lc=0;
+    for(var ii2=0;ii2<lipData.data.length;ii2+=4){lR+=lipData.data[ii2];lG+=lipData.data[ii2+1];lB+=lipData.data[ii2+2];lc++;}
+    if(lc){lR=lR/lc;lG=lG/lc;lB=lB/lc;}
+    item.ctx.beginPath();
+    item.ctx.moveTo(mX-mW/2,mY);
+    item.ctx.quadraticCurveTo(mX,mY-4,mX+mW/2,mY);
+    item.ctx.quadraticCurveTo(mX+mW*0.3,mY+smile+openV*0.3,mX,mY+smile);
+    item.ctx.quadraticCurveTo(mX-mW*0.3,mY+smile+openV*0.3,mX-mW/2,mY);
+    item.ctx.fillStyle='rgba('+Math.round(lR*0.85)+','+Math.round(lG*0.7)+','+Math.round(lB*0.7)+',0.8)';
+    item.ctx.fill();
+    if(openV>1){
+      item.ctx.beginPath();
+      item.ctx.ellipse(mX,mY+smile*0.5,mW*0.36,openV*0.45,0,0,Math.PI*2);
+      item.ctx.fillStyle='rgba(20,10,10,0.7)';
+      item.ctx.fill();
+    }
+  }
+
+  // EYE MOVEMENT
+  if(fCtrls[3]) {
+    var emX=Math.sin(t*0.6)*amp*1.1, emY=Math.sin(t*0.4)*amp*0.5;
+    [eyeLX,eyeRX].forEach(function(ex2) {
+      item.ctx.beginPath();
+      item.ctx.arc(ex2+emX*0.25,eyeY+emY*0.25,eW*0.38,0,Math.PI*2);
+      item.ctx.fillStyle='rgba(0,0,0,0.12)';
+      item.ctx.fill();
+      item.ctx.beginPath();
+      item.ctx.arc(ex2+emX*0.25-eW*0.12,eyeY+emY*0.25-eW*0.12,eW*0.09,0,Math.PI*2);
+      item.ctx.fillStyle='rgba(255,255,255,0.45)';
+      item.ctx.fill();
+    });
+  }
+}
+
+function facePlayAll() { faceItems.forEach(function(_,i){ fPlayItem(i); }); }
+function faceStopAll() { faceItems.forEach(function(_,i){ fStopItem(i); }); }
+
+function fSave(i) {
+  var item = faceItems[i]; if(!item) return;
+  var a = document.createElement('a');
+  a.href = item.canvas.toDataURL('image/png');
+  a.download = 'face_anim_'+(i+1)+'.png';
+  a.click();
 }
 
 </script>
