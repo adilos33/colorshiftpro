@@ -644,77 +644,163 @@ function extractAndColorize(time, filter, palette) {
       var W = videoEl.videoWidth, H = videoEl.videoHeight;
       canvas.width = W; canvas.height = H;
 
-      // Draw original
       ctx.filter = 'none';
-      ctx.drawImage(videoEl, 0, 0);
-      var orig = canvas.toDataURL('image/jpeg', 0.88);
+      ctx.drawImage(videoEl, 0, 0, W, H);
+      var orig = canvas.toDataURL('image/jpeg', 0.92);
 
-      // Get pixel data
-      var imageData = ctx.getImageData(0, 0, W, H);
-      var data = imageData.data;
-
-      // Parse target colors
-      var tC = hexToRgb(palette.clothes);
-      var tS = hexToRgb(palette.skin);
-      var tB = hexToRgb(palette.bg);
-
-      for (var i = 0; i < data.length; i += 4) {
-        var r = data[i], g = data[i+1], b = data[i+2];
-        var hsl = rgbToHsl(r, g, b);
-        var h = hsl[0], s = hsl[1], l = hsl[2];
-
-        // Detect background: low saturation or very bright/dark
-        if (s < 0.15 || l > 0.88 || l < 0.08) {
-          // Background pixel — shift to target bg color
-          var mix = 0.55 + Math.random() * 0.1;
-          data[i]   = Math.round(r * (1-mix) + tB[0] * mix);
-          data[i+1] = Math.round(g * (1-mix) + tB[1] * mix);
-          data[i+2] = Math.round(b * (1-mix) + tB[2] * mix);
-        }
-        // Detect skin: warm hues (0-40, 340-360), medium saturation
-        else if ((h < 40 || h > 340) && s > 0.15 && s < 0.75 && l > 0.3 && l < 0.8) {
-          var mix = 0.5 + Math.random() * 0.15;
-          data[i]   = Math.round(r * (1-mix) + tS[0] * mix);
-          data[i+1] = Math.round(g * (1-mix) + tS[1] * mix);
-          data[i+2] = Math.round(b * (1-mix) + tS[2] * mix);
-        }
-        // Detect clothes: medium-high saturation, various hues
-        else if (s > 0.2 && l > 0.1 && l < 0.85) {
-          var mix = 0.6 + Math.random() * 0.15;
-          data[i]   = Math.round(r * (1-mix) + tC[0] * mix);
-          data[i+1] = Math.round(g * (1-mix) + tC[1] * mix);
-          data[i+2] = Math.round(b * (1-mix) + tC[2] * mix);
-        }
-      }
-
-      ctx.putImageData(imageData, 0, 0);
+      var src = ctx.getImageData(0, 0, W, H);
+      var cartoonData = cartoonify(src, W, H);
+      ctx.putImageData(cartoonData, 0, 0);
       var colored = canvas.toDataURL('image/jpeg', 0.92);
       resolve({orig: orig, colored: colored});
     };
   });
 }
 
-function hexToRgb(hex) {
-  return [
-    parseInt(hex.slice(1,3),16),
-    parseInt(hex.slice(3,5),16),
-    parseInt(hex.slice(5,7),16)
-  ];
+function cartoonify(src, W, H) {
+  var d = src.data;
+
+  // Step 1: Bilateral-like filter — smooth colors but preserve edges
+  var smoothed = new Uint8ClampedArray(d.length);
+  var radius = 3;
+  for (var y = 0; y < H; y++) {
+    for (var x = 0; x < W; x++) {
+      var idx = (y * W + x) * 4;
+      var rSum=0, gSum=0, bSum=0, wSum=0;
+      var cr = d[idx], cg = d[idx+1], cb = d[idx+2];
+      for (var dy = -radius; dy <= radius; dy++) {
+        for (var dx = -radius; dx <= radius; dx++) {
+          var nx = x+dx, ny = y+dy;
+          if (nx<0||nx>=W||ny<0||ny>=H) continue;
+          var ni = (ny*W+nx)*4;
+          var nr=d[ni], ng=d[ni+1], nb=d[ni+2];
+          // Spatial weight
+          var sw = Math.exp(-(dx*dx+dy*dy)/(2*radius*radius));
+          // Color weight — reduce if color very different (preserve edges)
+          var cd = (nr-cr)*(nr-cr)+(ng-cg)*(ng-cg)+(nb-cb)*(nb-cb);
+          var cw = Math.exp(-cd/(2*25*25));
+          var w = sw * cw;
+          rSum+=nr*w; gSum+=ng*w; bSum+=nb*w; wSum+=w;
+        }
+      }
+      smoothed[idx]   = rSum/wSum;
+      smoothed[idx+1] = gSum/wSum;
+      smoothed[idx+2] = bSum/wSum;
+      smoothed[idx+3] = 255;
+    }
+  }
+
+  // Step 2: Quantize colors — reduce to flat cartoon-style color blocks
+  for (var i = 0; i < smoothed.length; i += 4) {
+    smoothed[i]   = quantize(smoothed[i],   6);
+    smoothed[i+1] = quantize(smoothed[i+1], 6);
+    smoothed[i+2] = quantize(smoothed[i+2], 6);
+  }
+
+  // Step 3: Detect edges using Sobel operator on original
+  var gray = new Uint8ClampedArray(W * H);
+  for (var i2 = 0; i2 < d.length; i2 += 4) {
+    gray[i2/4] = Math.round(d[i2]*0.299 + d[i2+1]*0.587 + d[i2+2]*0.114);
+  }
+
+  var out = new ImageData(W, H);
+  var od = out.data;
+
+  for (var y2 = 1; y2 < H-1; y2++) {
+    for (var x2 = 1; x2 < W-1; x2++) {
+      var idx2 = (y2*W+x2)*4;
+
+      // Sobel X
+      var gx = -gray[(y2-1)*W+(x2-1)] + gray[(y2-1)*W+(x2+1)]
+               -2*gray[y2*W+(x2-1)]   + 2*gray[y2*W+(x2+1)]
+               -gray[(y2+1)*W+(x2-1)] + gray[(y2+1)*W+(x2+1)];
+      // Sobel Y
+      var gy = -gray[(y2-1)*W+(x2-1)] - 2*gray[(y2-1)*W+x2] - gray[(y2-1)*W+(x2+1)]
+               +gray[(y2+1)*W+(x2-1)] + 2*gray[(y2+1)*W+x2] + gray[(y2+1)*W+(x2+1)];
+
+      var mag = Math.sqrt(gx*gx + gy*gy);
+      var isEdge = mag > 60; // threshold for cartoon outlines
+
+      if (isEdge) {
+        // Draw dark outline
+        od[idx2]   = 20;
+        od[idx2+1] = 20;
+        od[idx2+2] = 20;
+        od[idx2+3] = 255;
+      } else {
+        // Use smoothed + quantized color
+        od[idx2]   = smoothed[idx2];
+        od[idx2+1] = smoothed[idx2+1];
+        od[idx2+2] = smoothed[idx2+2];
+        od[idx2+3] = 255;
+      }
+    }
+  }
+
+  // Fill borders
+  for (var x3 = 0; x3 < W; x3++) {
+    var t=(0*W+x3)*4, b=((H-1)*W+x3)*4;
+    od[t]=smoothed[t];od[t+1]=smoothed[t+1];od[t+2]=smoothed[t+2];od[t+3]=255;
+    od[b]=smoothed[b];od[b+1]=smoothed[b+1];od[b+2]=smoothed[b+2];od[b+3]=255;
+  }
+  for (var y3 = 0; y3 < H; y3++) {
+    var l=(y3*W)*4, r=(y3*W+W-1)*4;
+    od[l]=smoothed[l];od[l+1]=smoothed[l+1];od[l+2]=smoothed[l+2];od[l+3]=255;
+    od[r]=smoothed[r];od[r+1]=smoothed[r+1];od[r+2]=smoothed[r+2];od[r+3]=255;
+  }
+
+  return out;
 }
 
-function rgbToHsl(r, g, b) {
-  r /= 255; g /= 255; b /= 255;
-  var mx = Math.max(r,g,b), mn = Math.min(r,g,b);
-  var h=0, s=0, l=(mx+mn)/2;
-  if (mx !== mn) {
-    var d = mx - mn;
-    s = l > 0.5 ? d/(2-mx-mn) : d/(mx+mn);
-    if (mx===r) h=((g-b)/d + (g<b?6:0))/6;
-    else if (mx===g) h=((b-r)/d+2)/6;
-    else h=((r-g)/d+4)/6;
-    h *= 360;
+function quantize(v, levels) {
+  var step = 255 / levels;
+  return Math.round(Math.round(v / step) * step);
+}
+
+function sampleBgHue(data, W, H) {
+  var hues = [], step = 6;
+  for (var x = 0; x < W; x += step) {
+    hues.push(rgb2hsl(data[(0*W+x)*4], data[(0*W+x)*4+1], data[(0*W+x)*4+2])[0]);
+    hues.push(rgb2hsl(data[((H-1)*W+x)*4], data[((H-1)*W+x)*4+1], data[((H-1)*W+x)*4+2])[0]);
   }
-  return [h, s, l];
+  for (var y = 0; y < H; y += step) {
+    hues.push(rgb2hsl(data[(y*W)*4], data[(y*W)*4+1], data[(y*W)*4+2])[0]);
+    hues.push(rgb2hsl(data[(y*W+W-1)*4], data[(y*W+W-1)*4+1], data[(y*W+W-1)*4+2])[0]);
+  }
+  return hues.reduce(function(a,b){return a+b;},0)/hues.length;
+}
+
+function rgb2hsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  var mx=Math.max(r,g,b),mn=Math.min(r,g,b),h=0,s=0,l=(mx+mn)/2;
+  if(mx!==mn){
+    var d=mx-mn;
+    s=l>0.5?d/(2-mx-mn):d/(mx+mn);
+    if(mx===r)h=((g-b)/d+(g<b?6:0))/6;
+    else if(mx===g)h=((b-r)/d+2)/6;
+    else h=((r-g)/d+4)/6;
+    h*=360;
+  }
+  return[h,s,l];
+}
+
+function hsl2rgb(h,s,l){
+  h/=360;
+  if(s===0)return[Math.round(l*255),Math.round(l*255),Math.round(l*255)];
+  var q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;
+  return[Math.round(hq(p,q,h+1/3)*255),Math.round(hq(p,q,h)*255),Math.round(hq(p,q,h-1/3)*255)];
+}
+
+function hq(p,q,t){
+  if(t<0)t+=1;if(t>1)t-=1;
+  if(t<1/6)return p+(q-p)*6*t;
+  if(t<1/2)return q;
+  if(t<2/3)return p+(q-p)*(2/3-t)*6;
+  return p;
+}
+
+function hexToRgb(hex){
+  return[parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)];
 }
 
 function addToGrid(colored, orig, time, num) {
