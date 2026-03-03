@@ -9,7 +9,7 @@
 <style>
 :root{
   --bg:#0d0d14;--sur:#13131f;--sur2:#1a1a2e;--sur3:#21213a;
-  --acc:#ff6b10;--blue:#00d4ff;--grn:#06d6a0;--purple:#a855f7;
+  --acc:#ff6b35;--blue:#00d4ff;--grn:#06d6a0;--purple:#a855f7;
   --text:#f0f0ff;--mut:#6b7080;--brd:rgba(255,255,255,0.07);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -24,9 +24,9 @@ header{position:relative;z-index:10;background:rgba(13,13,20,0.95);backdrop-filt
   display:flex;align-items:center;justify-content:space-between;}
 .brand{display:flex;align-items:center;gap:12px;}
 .brand-icon{width:38px;height:38px;border-radius:12px;
-  background:linear-gradient(110deg,var(--acc),var(--purple));
+  background:linear-gradient(135deg,var(--acc),var(--purple));
   display:flex;align-items:center;justify-content:center;font-size:19px;
-  box-shadow:0 0 20px rgba(255,107,53,0.10);}
+  box-shadow:0 0 20px rgba(255,107,53,0.35);}
 .brand-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;
   background:linear-gradient(90deg,var(--acc),var(--blue));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
@@ -50,7 +50,7 @@ header{position:relative;z-index:10;background:rgba(13,13,20,0.95);backdrop-filt
 .step-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;
   border:1px solid var(--brd);transition:all .3s;}
 .step-item.active{border-color:rgba(255,107,53,0.4);background:rgba(255,107,53,0.07);}
-.step-item.done{border-color:rgba(6,214,160,0.10);background:rgba(6,214,160,0.06);}
+.step-item.done{border-color:rgba(6,214,160,0.35);background:rgba(6,214,160,0.06);}
 .step-num{width:28px;height:28px;border-radius:50%;background:var(--sur3);
   display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
 .step-item.active .step-num{background:var(--acc);color:#fff;}
@@ -76,10 +76,10 @@ header{position:relative;z-index:10;background:rgba(13,13,20,0.95);backdrop-filt
 .btn{width:100%;padding:13px;border-radius:12px;border:none;font-family:'Tajawal',sans-serif;
   font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;
   justify-content:center;gap:8px;transition:all .2s;}
-.btn:disabled{opacity:.10;cursor:not-allowed;}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
 .btn:active:not(:disabled){transform:scale(.97);}
-.btn-fire{background:linear-gradient(110deg,var(--acc),#e91e8c);color:#fff;
-  box-shadow:0 5px 20px rgba(255,107,53,0.10);}
+.btn-fire{background:linear-gradient(135deg,var(--acc),#e91e8c);color:#fff;
+  box-shadow:0 5px 20px rgba(255,107,53,0.35);}
 .btn-fire:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 28px rgba(255,107,53,0.5);}
 .btn-grn{background:var(--grn);color:#000;box-shadow:0 5px 18px rgba(6,214,160,0.3);}
 .btn-grn:hover:not(:disabled){transform:translateY(-1px);}
@@ -105,7 +105,7 @@ header{position:relative;z-index:10;background:rgba(13,13,20,0.95);backdrop-filt
 .uz-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px;position:relative;z-index:1;}
 .uz-sub{color:var(--mut);font-size:14px;margin-bottom:22px;position:relative;z-index:1;line-height:1.6;}
 label.upload-label{display:inline-flex;align-items:center;gap:8px;
-  background:linear-gradient(110deg,var(--acc),var(--purple));color:#fff;
+  background:linear-gradient(135deg,var(--acc),var(--purple));color:#fff;
   padding:13px 26px;border-radius:12px;font-family:'Tajawal',sans-serif;
   font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;
   box-shadow:0 5px 20px rgba(255,107,53,0.3);position:relative;z-index:1;}
@@ -195,6 +195,57 @@ canvas{display:none;}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .anim{animation:fadeIn .4s ease both;}
+
+/* CARD ANIMATIONS */
+.fcard{animation:cardIn .5s ease both;}
+.fcard img{transition:transform .4s ease;}
+.fcard:hover img{transform:scale(1.08);}
+.fcard.pulse-anim{animation:cardPulse 1.5s ease infinite;}
+
+/* Ken Burns on each card */
+.fcard .kb-wrap{overflow:hidden;position:relative;}
+.fcard .kb-wrap img{animation:kenBurns 6s ease-in-out infinite alternate;transform-origin:center;}
+
+/* glow border animation */
+.fcard::after{content:"";position:absolute;inset:-1px;border-radius:14px;
+  background:linear-gradient(135deg,var(--acc),var(--purple),var(--blue),var(--grn));
+  z-index:-1;opacity:0;transition:opacity .3s;}
+.fcard:hover::after{opacity:0.6;}
+
+/* slideshow panel */
+.slideshow-panel{background:var(--sur);border-radius:20px;border:1px solid var(--brd);
+  padding:22px;display:none;margin-top:20px;}
+.slideshow-panel.show{display:block;}
+.ss-screen{position:relative;border-radius:14px;overflow:hidden;background:#000;
+  aspect-ratio:16/9;margin-bottom:16px;}
+.ss-screen img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;
+  opacity:0;transition:opacity .8s ease;}
+.ss-screen img.active{opacity:1;}
+.ss-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ss-btn{background:var(--sur2);border:1px solid var(--brd);color:var(--text);
+  padding:8px 16px;border-radius:9px;font-family:"Tajawal",sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;border:none;}
+.ss-btn:hover{background:var(--sur3);}
+.ss-btn.active{background:var(--acc);color:#fff;}
+.ss-info{font-size:13px;color:var(--mut);margin-right:auto;}
+.ss-progress{flex:1;min-width:120px;background:var(--sur2);border-radius:100px;
+  height:4px;overflow:hidden;}
+.ss-prog-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--purple));
+  border-radius:100px;transition:width linear;width:0%;}
+
+/* effect classes */
+.effect-zoom img.active{animation:ssZoom 4s ease-in-out forwards;}
+.effect-slide img.active{animation:ssSlide 4s ease-in-out forwards;}
+.effect-fade img.active{animation:ssFade 4s ease forwards;}
+.effect-rotate img.active{animation:ssRotate 4s ease forwards;}
+
+@keyframes cardIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes cardPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,53,0)}50%{box-shadow:0 0 0 6px rgba(255,107,53,0.2)}}
+@keyframes kenBurns{from{transform:scale(1) translateX(0)}to{transform:scale(1.12) translateX(-3%)}}
+@keyframes ssZoom{from{transform:scale(1)}to{transform:scale(1.15)}}
+@keyframes ssSlide{from{transform:translateX(0)}to{transform:translateX(-5%)}}
+@keyframes ssFade{from{opacity:0}to{opacity:1}}
+@keyframes ssRotate{from{transform:scale(1) rotate(0deg)}to{transform:scale(1.08) rotate(1.5deg)}}
 </style>
 </head>
 <body>
@@ -335,10 +386,49 @@ canvas{display:none;}
         <div class="res-title">تم معالجة <span id="resCount">0</span> صورة</div>
         <div class="res-actions">
           <button class="res-btn res-btn-grn" onclick="downloadZip()">⬇️ تحميل الكل ZIP</button>
+          <button class="res-btn" onclick="openSlideshow()" style="background:linear-gradient(135deg,var(--acc),var(--purple));color:#fff;">🎬 عرض متحرك</button>
           <button class="res-btn res-btn-ghost" onclick="clearResults()">🗑️ مسح</button>
+          <button class="res-btn" id="makeVideoBtn" onclick="makeVideo()" style="background:linear-gradient(135deg,#a855f7,#00d4ff);color:#fff;box-shadow:0 4px 16px rgba(168,85,247,0.35);">🎬 تحويل إلى فيديو MP4</button>
         </div>
       </div>
       <div class="frames-grid" id="framesGrid"></div>
+    </div>
+
+    <!-- Slideshow -->
+    <div class="slideshow-panel" id="slideshowPanel">
+      <div class="res-header" style="margin-bottom:14px">
+        <div class="res-title" style="font-size:15px">🎬 عرض الصور المتحركة</div>
+        <div class="res-actions">
+          <button class="ss-btn" onclick="toggleEffect("zoom")">🔍 تكبير</button>
+          <button class="ss-btn" onclick="toggleEffect("slide")">➡️ انزلاق</button>
+          <button class="ss-btn" onclick="toggleEffect("fade")">✨ تلاشي</button>
+          <button class="ss-btn" onclick="toggleEffect("rotate")">🌀 دوران</button>
+        </div>
+      </div>
+      <div class="ss-screen" id="ssScreen"></div>
+      <div class="ss-controls">
+        <button class="ss-btn" id="ssPlayBtn" onclick="toggleSlideshow()">▶️ تشغيل</button>
+        <button class="ss-btn" onclick="prevSlide()">⏮ السابق</button>
+        <button class="ss-btn" onclick="nextSlide()">التالي ⏭</button>
+        <div class="ss-progress"><div class="ss-prog-fill" id="ssProgFill"></div></div>
+        <span class="ss-info" id="ssInfo">0 / 0</span>
+      </div>
+    </div>
+
+    <!-- Video Output -->
+    <div class="results-panel anim" id="videoOutputPanel" style="margin-top:0">
+      <div class="res-header">
+        <div class="res-title" style="color:var(--purple)">🎬 الفيديو جاهز!</div>
+        <div class="res-actions">
+          <button class="res-btn" id="dlVideoBtn" style="background:linear-gradient(135deg,#a855f7,#00d4ff);color:#fff;">⬇️ تحميل الفيديو</button>
+        </div>
+      </div>
+      <div id="videoProgress" style="margin-bottom:14px;display:none">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span id="vpl">جاري إنشاء الفيديو...</span><span id="vpp">0%</span></div>
+        <div style="background:var(--sur2);border-radius:100px;height:6px;overflow:hidden"><div id="vpbar" style="height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));border-radius:100px;transition:width .3s;width:0%"></div></div>
+      </div>
+      <video id="outputVideo" controls style="width:100%;border-radius:14px;background:#000;display:none"></video>
+    </div>
     </div>
 
   </main>
@@ -425,14 +515,14 @@ function loadVideo(file) {
   videoEl.load();
   videoEl.onloadedmetadata = function() {
     var dur = videoEl.duration;
-    var estimated = Math.floor(dur / 10); // 1 frame every 10s
+    var estimated = Math.floor(dur / 35); // 1 frame every 35s
     document.getElementById('vidName').textContent = file.name.length > 25 ? file.name.slice(0,25)+'…' : file.name;
     document.getElementById('vidDur').textContent = fmtTime(dur);
     document.getElementById('vidSize').textContent = fmtSize(file.size);
     document.getElementById('vidFrames').textContent = estimated + ' صورة';
     document.getElementById('statTotal').textContent = estimated;
     document.getElementById('statDur').textContent = fmtTime(dur);
-    document.getElementById('statFps').textContent = 'كل 10ث';
+    document.getElementById('statFps').textContent = 'كل 35ث';
     document.getElementById('statsPanel').style.display = 'block';
     document.getElementById('palettePanel').style.display = 'block';
     uz.classList.add('hide');
@@ -469,6 +559,8 @@ async function startProcess() {
   cancelled = false;
   frames = [];
   document.getElementById('framesGrid').innerHTML = '';
+  document.getElementById('slideshowPanel').classList.remove('show');
+  ssPlaying = false; ssImgs = []; ssIndex = 0;
   document.getElementById('resultsPanel').classList.remove('show');
   document.getElementById('progressPanel').classList.add('show');
   document.getElementById('startBtn').disabled = true;
@@ -549,27 +641,87 @@ function extractAndColorize(time, filter, palette) {
     videoEl.onseeked = function() {
       videoEl.onseeked = null;
       if (!videoEl.videoWidth || !videoEl.videoHeight) { resolve(null); return; }
-      canvas.width = videoEl.videoWidth;
-      canvas.height = videoEl.videoHeight;
-      // Save original
+      var W = videoEl.videoWidth, H = videoEl.videoHeight;
+      canvas.width = W; canvas.height = H;
+
+      // Draw original
       ctx.filter = 'none';
       ctx.drawImage(videoEl, 0, 0);
-      var orig = canvas.toDataURL('image/jpeg', 0.85);
-      // Apply color filter
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.filter = filter;
-      ctx.drawImage(videoEl, 0, 0);
-      var colored = canvas.toDataURL('image/jpeg', 0.88);
+      var orig = canvas.toDataURL('image/jpeg', 0.88);
+
+      // Get pixel data
+      var imageData = ctx.getImageData(0, 0, W, H);
+      var data = imageData.data;
+
+      // Parse target colors
+      var tC = hexToRgb(palette.clothes);
+      var tS = hexToRgb(palette.skin);
+      var tB = hexToRgb(palette.bg);
+
+      for (var i = 0; i < data.length; i += 4) {
+        var r = data[i], g = data[i+1], b = data[i+2];
+        var hsl = rgbToHsl(r, g, b);
+        var h = hsl[0], s = hsl[1], l = hsl[2];
+
+        // Detect background: low saturation or very bright/dark
+        if (s < 0.15 || l > 0.88 || l < 0.08) {
+          // Background pixel — shift to target bg color
+          var mix = 0.55 + Math.random() * 0.1;
+          data[i]   = Math.round(r * (1-mix) + tB[0] * mix);
+          data[i+1] = Math.round(g * (1-mix) + tB[1] * mix);
+          data[i+2] = Math.round(b * (1-mix) + tB[2] * mix);
+        }
+        // Detect skin: warm hues (0-40, 340-360), medium saturation
+        else if ((h < 40 || h > 340) && s > 0.15 && s < 0.75 && l > 0.3 && l < 0.8) {
+          var mix = 0.5 + Math.random() * 0.15;
+          data[i]   = Math.round(r * (1-mix) + tS[0] * mix);
+          data[i+1] = Math.round(g * (1-mix) + tS[1] * mix);
+          data[i+2] = Math.round(b * (1-mix) + tS[2] * mix);
+        }
+        // Detect clothes: medium-high saturation, various hues
+        else if (s > 0.2 && l > 0.1 && l < 0.85) {
+          var mix = 0.6 + Math.random() * 0.15;
+          data[i]   = Math.round(r * (1-mix) + tC[0] * mix);
+          data[i+1] = Math.round(g * (1-mix) + tC[1] * mix);
+          data[i+2] = Math.round(b * (1-mix) + tC[2] * mix);
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      var colored = canvas.toDataURL('image/jpeg', 0.92);
       resolve({orig: orig, colored: colored});
     };
   });
+}
+
+function hexToRgb(hex) {
+  return [
+    parseInt(hex.slice(1,3),16),
+    parseInt(hex.slice(3,5),16),
+    parseInt(hex.slice(5,7),16)
+  ];
+}
+
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  var mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+  var h=0, s=0, l=(mx+mn)/2;
+  if (mx !== mn) {
+    var d = mx - mn;
+    s = l > 0.5 ? d/(2-mx-mn) : d/(mx+mn);
+    if (mx===r) h=((g-b)/d + (g<b?6:0))/6;
+    else if (mx===g) h=((b-r)/d+2)/6;
+    else h=((r-g)/d+4)/6;
+    h *= 360;
+  }
+  return [h, s, l];
 }
 
 function addToGrid(colored, orig, time, num) {
   var grid = document.getElementById('framesGrid');
   var card = document.createElement('div');
   card.className = 'fcard';
-  var img = document.createElement('img');
+  var wrap = document.createElement("div"); wrap.className = "kb-wrap"; var img = document.createElement("img");
   img.src = colored;
   img.alt = '';
   var dl = document.createElement('div');
@@ -583,7 +735,7 @@ function addToGrid(colored, orig, time, num) {
   origBtn.textContent = '👁 أصلي';
   origBtn.onmouseenter = function() { img.src = orig; };
   origBtn.onmouseleave = function() { img.src = colored; };
-  card.appendChild(img);
+  wrap.appendChild(img); card.appendChild(wrap);
   card.appendChild(dl);
   card.appendChild(info);
   card.appendChild(origBtn);
@@ -620,9 +772,88 @@ async function downloadZip() {
 function clearResults() {
   frames = [];
   document.getElementById('framesGrid').innerHTML = '';
+  document.getElementById('slideshowPanel').classList.remove('show');
+  ssPlaying = false; ssImgs = []; ssIndex = 0;
   document.getElementById('resultsPanel').classList.remove('show');
   document.getElementById('downloadBtn').style.display = 'none';
   document.getElementById('statDone').textContent = '0';
+}
+
+// ===== SLIDESHOW =====
+var ssIndex = 0, ssPlaying = false, ssTimer = null, ssEffect = "zoom", ssImgs = [];
+
+function openSlideshow() {
+  ssImgs = frames.map(function(f){return f.dataURL;});
+  if (!ssImgs.length) return;
+  var screen = document.getElementById("ssScreen");
+  screen.innerHTML = "";
+  ssImgs.forEach(function(src, i) {
+    var img = document.createElement("img");
+    img.src = src;
+    if (i===0) img.classList.add("active");
+    screen.appendChild(img);
+  });
+  ssIndex = 0;
+  document.getElementById("slideshowPanel").classList.add("show");
+  document.getElementById("slideshowPanel").scrollIntoView({behavior:"smooth"});
+  updateSsInfo();
+  applyEffect();
+}
+
+function toggleSlideshow() {
+  ssPlaying = !ssPlaying;
+  document.getElementById("ssPlayBtn").textContent = ssPlaying ? "⏸ إيقاف" : "▶️ تشغيل";
+  if (ssPlaying) runSlideshow();
+  else { clearTimeout(ssTimer); resetProgFill(); }
+}
+
+function runSlideshow() {
+  if (!ssPlaying) return;
+  var fill = document.getElementById("ssProgFill");
+  fill.style.transition = "width 3s linear";
+  fill.style.width = "100%";
+  ssTimer = setTimeout(function() {
+    fill.style.transition = "none";
+    fill.style.width = "0%";
+    nextSlide();
+    if (ssPlaying) setTimeout(runSlideshow, 50);
+  }, 3000);
+}
+
+function resetProgFill() {
+  var fill = document.getElementById("ssProgFill");
+  fill.style.transition = "none";
+  fill.style.width = "0%";
+}
+
+function showSlide(idx) {
+  var imgs = document.querySelectorAll("#ssScreen img");
+  imgs.forEach(function(im){im.classList.remove("active"); im.style.animation="none"; im.offsetHeight;});
+  ssIndex = (idx + imgs.length) % imgs.length;
+  imgs[ssIndex].classList.add("active");
+  applyEffect();
+  updateSsInfo();
+}
+
+function nextSlide() { showSlide(ssIndex + 1); }
+function prevSlide() { showSlide(ssIndex - 1); }
+
+function applyEffect() {
+  var screen = document.getElementById("ssScreen");
+  screen.className = "ss-screen effect-" + ssEffect;
+}
+
+function toggleEffect(e) {
+  ssEffect = e;
+  applyEffect();
+  document.querySelectorAll(".ss-btn").forEach(function(b){
+    b.classList.remove("active");
+    if (b.textContent.toLowerCase().includes(e === "zoom" ? "تكبير" : e === "slide" ? "انزلاق" : e === "fade" ? "تلاشي" : "دوران")) b.classList.add("active");
+  });
+}
+
+function updateSsInfo() {
+  document.getElementById("ssInfo").textContent = (ssIndex+1) + " / " + ssImgs.length;
 }
 
 function resetAll() {
@@ -639,6 +870,8 @@ function resetAll() {
   document.getElementById('resetBtn').style.display = 'none';
   document.getElementById('startBtn').disabled = true;
   document.getElementById('framesGrid').innerHTML = '';
+  document.getElementById('slideshowPanel').classList.remove('show');
+  ssPlaying = false; ssImgs = []; ssIndex = 0;
   document.getElementById('videoInput').value = '';
   setStep(1);
 }
