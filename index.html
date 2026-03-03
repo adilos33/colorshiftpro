@@ -477,8 +477,8 @@ async function startProcess() {
 
   var dur = videoEl.duration;
   var timestamps = [];
-  // 1 frame every 8 seconds
-  for (var t = 0; t <= dur; t += 8) {
+  // 1 frame every 9.5 seconds
+  for (var t = 0; t <= dur; t += 9.5) {
     timestamps.push(parseFloat(t.toFixed(2)));
   }
   // cap at 300
